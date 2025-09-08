@@ -23,7 +23,11 @@ export function Header() {
   };
 
   const handleDocsClick = () => {
-    window.open("https://docs.example", "_blank", "noopener,noreferrer");
+    window.open(
+      "https://tterysolana-wq.github.io/pouchy-docs/",
+      "_blank",
+      "noopener,noreferrer"
+    );
   };
 
   return (
