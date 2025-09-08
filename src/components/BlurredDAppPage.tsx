@@ -149,7 +149,7 @@ export function BlurredDAppPage() {
           
           {/* Main Content - Always blurred with no interaction */}
           <div className="flex-1 p-4 sm:p-6 relative">
-            <div className="relative z-10 transition-all duration-500 blur-md filter pointer-events-none">
+            <div className="relative z-10 transition-all duration-500 blur-[1px] filter pointer-events-none">
               {renderView()}
             </div>
 
@@ -159,7 +159,7 @@ export function BlurredDAppPage() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.5, ease: "easeOut" }}
-              className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm"
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/5 backdrop-blur-[1px]"
             >
               <div className="bg-gradient-to-br from-white/95 via-pink-50/90 to-purple-50/90 backdrop-blur-xl rounded-2xl xs:rounded-3xl border border-white/60 shadow-2xl p-4 xs:p-6 sm:p-8 md:p-10 mx-3 xs:mx-4 max-w-sm xs:max-w-lg w-full relative overflow-hidden">
                 {/* Floating sparkles background */}
