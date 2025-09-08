@@ -55,10 +55,8 @@ export function BlurredDAppPage() {
       <div className="absolute inset-0 bg-gradient-to-br from-blue-50/40 via-pink-50/30 to-purple-50/40 backdrop-blur-[0.5px]"></div>
       
       <div className="relative z-10 min-h-screen flex flex-col">
-        {/* Desktop Header */}
-        <div className="hidden lg:block">
-          <DAppHeader isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} />
-        </div>
+        {/* Header - Desktop and Mobile */}
+        <DAppHeader isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} />
         
         <div className="flex-1 flex relative">
           {/* Desktop Sidebar Navigation - Disabled */}
@@ -93,12 +91,6 @@ export function BlurredDAppPage() {
                 </div>
               </div>
             </nav>
-          </div>
-
-          {/* Mobile Header & Menu Button */}
-          <div className="lg:hidden">
-            {/* Mobile Header */}
-            <DAppHeader isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} />
           </div>
 
           {/* Mobile Navigation Overlay */}
