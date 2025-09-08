@@ -2,7 +2,7 @@ import { Toaster } from './components/ui/sonner';
 import { RouterProvider, useRouter } from './components/Router';
 import { WalletProvider } from './components/WalletProvider';
 import { LandingPage } from './components/LandingPage';
-import { BlurredDAppPage } from './components/BlurredDAppPage';
+import { DAppPage } from './components/DAppPage';
 import { motion, AnimatePresence } from 'motion/react';
 
 function AppContent() {
@@ -37,7 +37,7 @@ function AppContent() {
             }}
             className="w-full min-h-screen"
           >
-            <BlurredDAppPage />
+            <DAppPage />
           </motion.div>
         )}
       </AnimatePresence>
