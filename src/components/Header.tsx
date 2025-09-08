@@ -24,7 +24,7 @@ export function Header() {
 
   const handleDocsClick = () => {
     window.open(
-      "https://tterysolana-wq.github.io/pouchy-docs/",
+      "https://pouchyai.github.io/pouchy-docs/",
       "_blank",
       "noopener,noreferrer"
     );
