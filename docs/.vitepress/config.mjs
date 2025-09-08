@@ -4,10 +4,10 @@ export default defineConfig({
   title: 'PouchyAI',
   description: 'AI-Powered Wallet Intelligence for Solana DEX',
   base: '/pouchy-docs/',
-  
+
   themeConfig: {
     logo: '/logo.svg',
-    
+
     nav: [
       { text: 'Home', link: '/' },
       { text: 'Features', link: '/features' },
