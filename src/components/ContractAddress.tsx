@@ -5,8 +5,8 @@ import { toast } from 'sonner@2.0.3';
 export function ContractAddress() {
   const [copied, setCopied] = useState(false);
   
-  // Contract address - will be empty until filled
-  const contractAddress = "";
+  // Contract address - POUCHY token
+  const contractAddress = "771BXNi8wyPkaCbuN8pVnCKvrhDYkzzKBL3kmTYBpump";
 
   const handleCopy = async () => {
     if (!contractAddress) {

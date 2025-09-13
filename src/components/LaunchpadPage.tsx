@@ -43,7 +43,7 @@ const hotProjects = [
   {
     id: 1,
     name: 'POUCHY',
-    ticker: 'PCH',
+    ticker: 'POUCHY',
     marketCap: '$456.8K',
     change: '+42.3%',
     logo: '🐾',
@@ -113,11 +113,11 @@ export function LaunchpadPage() {
   }, []);
 
   const navigationItems = [
-    { key: 'home', icon: Home, label: 'Home' },
-    { key: 'leaderboard', icon: Trophy, label: 'Leaderboard' },
-    { key: 'rewards', icon: Gift, label: 'Rewards' },
-    { key: 'revenue', icon: DollarSign, label: 'Revenue' },
-    { key: 'docs', icon: BookOpen, label: 'Docs' },
+    { key: 'home', icon: Home, label: 'Home', action: () => navigateTo('landing') },
+    { key: 'leaderboard', icon: Trophy, label: 'Leaderboard', action: () => {} },
+    { key: 'rewards', icon: Gift, label: 'Rewards', action: () => {} },
+    { key: 'revenue', icon: DollarSign, label: 'Revenue', action: () => {} },
+    { key: 'docs', icon: BookOpen, label: 'Docs', action: () => window.open('https://pouchyai.github.io/pouchy-docs/', '_blank') },
   ];
 
   if (!isConnected) {
@@ -274,11 +274,12 @@ export function LaunchpadPage() {
 
               {/* Desktop Navigation */}
               <nav className="hidden lg:flex items-center gap-6">
-                {navigationItems.map(({ key, icon: Icon, label }) => (
+                {navigationItems.map(({ key, icon: Icon, label, action }) => (
                   <motion.button
                     key={key}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
+                    onClick={action}
                     className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-all duration-200"
                     style={{ fontFamily: 'Fredoka, system-ui, sans-serif' }}
                   >
@@ -290,6 +291,7 @@ export function LaunchpadPage() {
                   variant="ghost"
                   size="sm"
                   className="text-white hover:bg-white/20"
+                  onClick={() => window.open('https://x.com/Pouchydotfun', '_blank')}
                 >
                   <Twitter className="w-4 h-4" />
                 </Button>
@@ -332,9 +334,10 @@ export function LaunchpadPage() {
               className="lg:hidden bg-white/95 backdrop-blur-md border-t border-white/30 p-4"
             >
               <nav className="space-y-2">
-                {navigationItems.map(({ key, icon: Icon, label }) => (
+                {navigationItems.map(({ key, icon: Icon, label, action }) => (
                   <button
                     key={key}
+                    onClick={action}
                     className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-100 transition-all duration-200"
                     style={{ fontFamily: 'Fredoka, system-ui, sans-serif' }}
                   >
