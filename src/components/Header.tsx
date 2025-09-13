@@ -2,7 +2,7 @@ import { ExternalLink, Rocket } from "lucide-react";
 import { Button } from "./ui/button";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
 import { useRouter } from "./Router";
-import logoImage from 'figma:asset/797f200edc69cda7280b1e079929a3b86ee29352.png';
+import logoImage from "figma:asset/797f200edc69cda7280b1e079929a3b86ee29352.png";
 
 // Official X Logo Component
 function XLogo({ className }: { className?: string }) {
@@ -22,15 +22,19 @@ export function Header() {
   const { navigateTo } = useRouter();
 
   const handleXClick = () => {
-    window.open('https://x.com/yourproject', '_blank', 'noopener,noreferrer');
+    window.open("https://x.com/Pouchydotfun", "_blank", "noopener,noreferrer");
   };
 
   const handleDocsClick = () => {
-    window.open('https://docs.example', '_blank', 'noopener,noreferrer');
+    window.open(
+      "https://pouchyai.github.io/pouchy-docs/",
+      "_blank",
+      "noopener,noreferrer"
+    );
   };
 
   const handleLaunchpadClick = () => {
-    navigateTo('launchpad');
+    navigateTo("launchpad");
   };
 
   return (
@@ -46,11 +50,11 @@ export function Header() {
           {/* Soft overlay to blend with background */}
           <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-pink-200/20 pointer-events-none"></div>
         </div>
-        <h2 
-          className="text-xl xs:text-2xl sm:text-3xl md:text-4xl tracking-wide text-gray-700/90" 
-          style={{ 
-            fontFamily: 'Fredoka, system-ui, sans-serif',
-            fontSize: 'clamp(1.25rem, 4vw, 2.5rem)'
+        <h2
+          className="text-xl xs:text-2xl sm:text-3xl md:text-4xl tracking-wide text-gray-700/90"
+          style={{
+            fontFamily: "Fredoka, system-ui, sans-serif",
+            fontSize: "clamp(1.25rem, 4vw, 2.5rem)",
           }}
         >
           Pouchy
@@ -74,7 +78,9 @@ export function Header() {
           className="flex items-center gap-1 xs:gap-2 sm:gap-3 px-2 py-2 xs:px-3 xs:py-2 sm:px-4 sm:py-3 md:px-5 md:py-3 rounded-xl hover:bg-white/20 transition-all duration-200 hover:shadow-lg hover:shadow-pink-200/20 min-h-[44px] min-w-[44px] touch-manipulation"
         >
           <XLogo className="w-4 h-4 xs:w-5 xs:h-5 sm:w-6 sm:h-6" />
-          <span className="hidden sm:inline text-sm xs:text-base md:text-lg">X</span>
+          <span className="hidden sm:inline text-sm xs:text-base md:text-lg">
+            X
+          </span>
         </button>
 
         <Button
