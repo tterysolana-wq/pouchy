@@ -1,0 +1,49 @@
+<svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle with gradient -->
+  <circle cx="90" cy="90" r="90" fill="url(#background)" />
+  
+  <!-- Main Solana-inspired shapes with more detail for large size -->
+  <path d="M45 67.5c0-8.5 8.5-14 17-11l56 11c8.5 2.5 17 8.5 17 17v11c0 8.5-8.5 14-17 11l-56-11c-8.5-2.5-17-8.5-17-17v-11z" 
+        fill="url(#primary)" />
+  
+  <!-- Second layer -->
+  <path d="M45 101.5c0-8.5 8.5-14 17-11l56 11c8.5 2.5 17 8.5 17 17v11c0 8.5-8.5 14-17 11l-56-11c-8.5-2.5-17-8.5-17-17v-11z" 
+        fill="url(#secondary)" opacity="0.8" />
+  
+  <!-- Decorative sparkles -->
+  <circle cx="62" cy="50" r="8" fill="#FFF5D6" opacity="0.9" />
+  <circle cx="129" cy="62" r="5" fill="#D7F9F1" opacity="0.8" />
+  <circle cx="51" cy="135" r="5" fill="#FFB3C1" opacity="0.7" />
+  <circle cx="140" cy="124" r="8" fill="#FBE7C6" opacity="0.8" />
+  <circle cx="75" cy="45" r="3" fill="#FFB3C1" opacity="0.6" />
+  <circle cx="150" cy="90" r="4" fill="#FFF5D6" opacity="0.7" />
+  
+  <!-- Central highlight -->
+  <ellipse cx="90" cy="90" rx="22" ry="11" fill="rgba(255, 255, 255, 0.3)" />
+  
+  <!-- Additional decorative elements -->
+  <path d="M70 84c2-1 4 1 4 3s-2 4-4 3-4-1-4-3 2-4 4-3z" fill="rgba(255, 255, 255, 0.4)" />
+  <path d="M110 96c2-1 4 1 4 3s-2 4-4 3-4-1-4-3 2-4 4-3z" fill="rgba(255, 255, 255, 0.4)" />
+  
+  <defs>
+    <linearGradient id="background" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#B4E1FF" />
+      <stop offset="25%" stop-color="#FFF5D6" />
+      <stop offset="50%" stop-color="#FFB3C1" />
+      <stop offset="75%" stop-color="#FBE7C6" />
+      <stop offset="100%" stop-color="#D7F9F1" />
+    </linearGradient>
+    
+    <linearGradient id="primary" x1="0%" y1="0%" x2="100%" y2="50%">
+      <stop offset="0%" stop-color="#FFF5D6" />
+      <stop offset="50%" stop-color="#FBE7C6" />
+      <stop offset="100%" stop-color="#FFB3C1" />
+    </linearGradient>
+    
+    <linearGradient id="secondary" x1="0%" y1="50%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#D7F9F1" />
+      <stop offset="50%" stop-color="#B4E1FF" />
+      <stop offset="100%" stop-color="#FBE7C6" />
+    </linearGradient>
+  </defs>
+</svg>

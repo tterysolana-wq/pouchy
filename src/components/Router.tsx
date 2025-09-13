@@ -1,6 +1,6 @@
 import { useState, createContext, useContext } from 'react';
 
-type Page = 'landing' | 'dapp';
+type Page = 'landing' | 'dapp' | 'launchpad';
 
 interface RouterContextType {
   currentPage: Page;

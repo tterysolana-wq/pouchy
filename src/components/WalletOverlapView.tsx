@@ -4,10 +4,8 @@ import { Button } from './ui/button';
 import { Card } from './ui/card';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
-import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Badge } from './ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
 import { toast } from 'sonner@2.0.3';
 
 interface WalletInput {
@@ -16,13 +14,21 @@ interface WalletInput {
   isValid: boolean | null;
 }
 
-interface TokenOverlap {
-  tokenAddress: string;
-  symbol: string;
-  overlapScore: number;
-  popularity: number;
-  winrate: number;
-  commonWallets: string[];
+interface CommonToken {
+  mint: string;
+  currentPrice: number;
+  priceChange24h: number;
+  volume24h: number;
+  marketCap: number;
+}
+
+interface ApiResponse {
+  success: boolean;
+  message: string;
+  data: {
+    commonTokens: CommonToken[];
+    totalAnalyzedWallets: number;
+  };
 }
 
 export function WalletOverlapView() {
@@ -31,39 +37,12 @@ export function WalletOverlapView() {
     { id: '2', address: '', isValid: null },
     { id: '3', address: '', isValid: null },
   ]);
-  const [timeframe, setTimeframe] = useState('7D');
   const [isSearching, setIsSearching] = useState(false);
   const [showResults, setShowResults] = useState(false);
-  const [sortBy, setSortBy] = useState('overlapScore');
-  const [selectedToken, setSelectedToken] = useState<TokenOverlap | null>(null);
-
-  // Mock results
-  const mockResults: TokenOverlap[] = [
-    {
-      tokenAddress: 'So11111111111111111111111111111111111111112',
-      symbol: 'SOL',
-      overlapScore: 98,
-      popularity: 95,
-      winrate: 76.4,
-      commonWallets: ['9WzDXwBbmkg...', '2BvkZhSJZt...', 'AqKmFnNvKZ...'],
-    },
-    {
-      tokenAddress: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
-      symbol: 'USDC',
-      overlapScore: 87,
-      popularity: 89,
-      winrate: 82.1,
-      commonWallets: ['9WzDXwBbmkg...', '2BvkZhSJZt...'],
-    },
-    {
-      tokenAddress: '4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R',
-      symbol: 'RAY',
-      overlapScore: 72,
-      popularity: 68,
-      winrate: 64.8,
-      commonWallets: ['9WzDXwBbmkg...', 'AqKmFnNvKZ...'],
-    },
-  ];
+  const [sortBy, setSortBy] = useState('priceChange24h');
+  const [commonTokens, setCommonTokens] = useState<CommonToken[]>([]);
+  const [totalAnalyzedWallets, setTotalAnalyzedWallets] = useState(0);
+  const [error, setError] = useState<string | null>(null);
 
   const validateWalletAddress = (address: string): boolean => {
     if (!address) return false;
@@ -100,6 +79,8 @@ export function WalletOverlapView() {
       { id: '3', address: '', isValid: null },
     ]);
     setShowResults(false);
+    setCommonTokens([]);
+    setError(null);
     toast("Cleared", {
       description: "All wallet inputs have been cleared.",
       duration: 2000,
@@ -129,19 +110,43 @@ export function WalletOverlapView() {
     }
 
     setIsSearching(true);
+    setError(null);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      
-      setShowResults(true);
-      toast("Overlap Found! 🔍", {
-        description: `Found ${mockResults.length} common tokens across ${validWallets.length} wallets.`,
-        duration: 4000,
+      const response = await fetch('https://ggunktueytmayrkskgbk.supabase.co/functions/v1/wallet-overlap', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdndW5rdHVleXRtYXlya3NrZ2JrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc2MDAxMTMsImV4cCI6MjA3MzE3NjExM30.8yBN3AEagH-T8kXhghGaMxALkMC4lLqDoKQqrTjAFOY',
+        },
+        body: JSON.stringify({
+          wallets: addresses
+        }),
       });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data: ApiResponse = await response.json();
+      
+      if (data.success) {
+        setCommonTokens(data.data.commonTokens);
+        setTotalAnalyzedWallets(data.data.totalAnalyzedWallets);
+        setShowResults(true);
+        
+        toast("Overlap Found! 🔍", {
+          description: `Found ${data.data.commonTokens.length} common token${data.data.commonTokens.length !== 1 ? 's' : ''} across ${data.data.totalAnalyzedWallets} wallets.`,
+          duration: 4000,
+        });
+      } else {
+        throw new Error(data.message || 'Unknown error occurred');
+      }
     } catch (error) {
+      console.error('Error finding wallet overlap:', error);
+      setError(error instanceof Error ? error.message : 'Unknown error occurred');
       toast("Search Failed", {
-        description: "Overlap search failed. Please try again.",
+        description: "Wallet overlap search failed. Please try again.",
         duration: 3000,
       });
     } finally {
@@ -149,10 +154,10 @@ export function WalletOverlapView() {
     }
   };
 
-  const openInAnalyzer = (tokenAddress: string) => {
-    // This would navigate to Token Analyzer with pre-filled address
-    toast("Opening in Analyzer", {
-      description: `Token ${tokenAddress.slice(0, 6)}... will be analyzed.`,
+  const openInExplorer = (tokenAddress: string) => {
+    window.open(`https://explorer.solana.com/address/${tokenAddress}`, '_blank');
+    toast("Opening Explorer", {
+      description: `Opening ${tokenAddress.slice(0, 6)}... in Solana Explorer.`,
       duration: 3000,
     });
   };
@@ -160,9 +165,20 @@ export function WalletOverlapView() {
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     toast("Copied!", {
-      description: "Address copied to clipboard.",
+      description: "Token address copied to clipboard.",
       duration: 2000,
     });
+  };
+
+  const formatNumber = (num: number) => {
+    if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+    if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+    return num.toFixed(2);
+  };
+
+  const formatPrice = (price: number) => {
+    if (price < 0.001) return price.toExponential(2);
+    return price.toFixed(6);
   };
 
   // Handle keyboard shortcuts
@@ -180,46 +196,74 @@ export function WalletOverlapView() {
   const validWalletCount = wallets.filter(w => w.isValid === true).length;
   const canSearch = validWalletCount >= 3;
 
+  const sortedTokens = [...commonTokens].sort((a, b) => {
+    switch (sortBy) {
+      case 'priceChange24h':
+        return b.priceChange24h - a.priceChange24h;
+      case 'volume24h':
+        return b.volume24h - a.volume24h;
+      case 'marketCap':
+        return b.marketCap - a.marketCap;
+      case 'currentPrice':
+        return b.currentPrice - a.currentPrice;
+      default:
+        return b.priceChange24h - a.priceChange24h;
+    }
+  });
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 xs:space-y-6">
       {/* Page Header */}
-      <div className="mb-6">
-        <h1 
-          className="text-3xl text-gray-800/90 mb-2"
-          style={{ fontFamily: 'Fredoka, system-ui, sans-serif' }}
-        >
-          Wallet Overlap 🔍
-        </h1>
-        <p className="text-gray-600">Find common tokens across multiple wallets</p>
+      <div className="flex flex-col xs:flex-row xs:justify-between xs:items-start mb-4 xs:mb-6 gap-3 xs:gap-4">
+        <div className="flex-1">
+          <h1 
+            className="text-xl xs:text-2xl sm:text-3xl text-gray-800/90 mb-1 xs:mb-2 leading-tight"
+            style={{ 
+              fontFamily: 'Fredoka, system-ui, sans-serif',
+              fontSize: 'clamp(1.25rem, 4vw, 2rem)'
+            }}
+          >
+            <span className="hidden xs:inline">Wallet Overlap 🔍</span>
+            <span className="xs:hidden">Overlap 🔍</span>
+          </h1>
+          <p className="text-xs xs:text-sm sm:text-base text-gray-600 leading-tight">
+            <span className="hidden xs:inline">Find common tokens across multiple wallets</span>
+            <span className="xs:hidden">Find common tokens across wallets</span>
+          </p>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 xs:gap-6">
         {/* Input Section */}
-        <div className="lg:col-span-1 space-y-6">
+        <div className="lg:col-span-1 space-y-4 xs:space-y-6">
           {/* Wallet Inputs */}
-          <Card className="bg-white/30 backdrop-blur-sm border-white/20 p-6">
-            <div className="flex justify-between items-center mb-4">
+          <Card className="bg-white/30 backdrop-blur-sm border-white/20 p-3 xs:p-4 sm:p-6">
+            <div className="flex justify-between items-center mb-3 xs:mb-4">
               <h3 
-                className="text-lg text-gray-800/90"
+                className="text-base xs:text-lg text-gray-800/90"
                 style={{ fontFamily: 'Fredoka, system-ui, sans-serif' }}
               >
-                Wallet Addresses
+                <span className="hidden xs:inline">Wallet Addresses</span>
+                <span className="xs:hidden">Wallets</span>
               </h3>
-              <Badge variant="secondary" className={canSearch ? 'bg-green-100/50 text-green-700' : 'bg-orange-100/50 text-orange-700'}>
+              <Badge 
+                variant="secondary" 
+                className={canSearch ? 'bg-green-100/50 text-green-700' : 'bg-orange-100/50 text-orange-700'}
+              >
                 {validWalletCount}/3+ valid
               </Badge>
             </div>
             
-            <div className="space-y-3">
+            <div className="space-y-2 xs:space-y-3">
               {wallets.map((wallet, index) => (
                 <div key={wallet.id} className="relative">
-                  <div className="flex items-center gap-2">
-                    <span className="w-6 text-sm text-gray-600">{index + 1}.</span>
+                  <div className="flex items-center gap-1 xs:gap-2">
+                    <span className="w-4 xs:w-6 text-xs xs:text-sm text-gray-600">{index + 1}.</span>
                     <Input
-                      placeholder={`Wallet ${index + 1} address`}
+                      placeholder={`Wallet ${index + 1}`}
                       value={wallet.address}
                       onChange={(e) => updateWallet(wallet.id, e.target.value)}
-                      className={`flex-1 bg-white/30 border-white/20 ${
+                      className={`flex-1 bg-white/30 border-white/20 text-xs xs:text-sm ${
                         wallet.isValid === false ? 'border-red-400' : 
                         wallet.isValid === true ? 'border-green-400' : ''
                       }`}
@@ -229,15 +273,15 @@ export function WalletOverlapView() {
                         variant="ghost"
                         size="sm"
                         onClick={() => removeWallet(wallet.id)}
-                        className="p-2 text-red-500 hover:text-red-700"
+                        className="p-1 xs:p-2 text-red-500 hover:text-red-700"
                       >
-                        <X className="w-4 h-4" />
+                        <X className="w-3 h-3 xs:w-4 xs:h-4" />
                       </Button>
                     )}
                   </div>
                   
                   {wallet.isValid === false && (
-                    <p className="text-xs text-red-500 mt-1 ml-8">Invalid wallet format</p>
+                    <p className="text-xs text-red-500 mt-1 ml-5 xs:ml-8">Invalid wallet format</p>
                   )}
                 </div>
               ))}
@@ -245,57 +289,35 @@ export function WalletOverlapView() {
               <Button
                 variant="secondary"
                 onClick={addWallet}
-                className="w-full bg-white/20 backdrop-blur-sm border-white/20 hover:bg-white/30 mt-4"
+                className="w-full bg-white/20 backdrop-blur-sm border-white/20 hover:bg-white/30 mt-3 xs:mt-4 text-xs xs:text-sm"
                 style={{ fontFamily: 'Fredoka, system-ui, sans-serif' }}
               >
-                <Plus className="w-4 h-4 mr-2" />
-                Add Wallet
+                <Plus className="w-3 h-3 xs:w-4 xs:h-4 mr-1 xs:mr-2" />
+                <span className="hidden xs:inline">Add Wallet</span>
+                <span className="xs:hidden">Add</span>
               </Button>
             </div>
           </Card>
 
-          {/* Timeframe */}
-          <Card className="bg-white/30 backdrop-blur-sm border-white/20 p-6">
-            <h3 
-              className="text-lg text-gray-800/90 mb-4"
-              style={{ fontFamily: 'Fredoka, system-ui, sans-serif' }}
-            >
-              Timeframe
-            </h3>
-            
-            <RadioGroup value={timeframe} onValueChange={setTimeframe} className="flex gap-4">
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="1D" id="1d" />
-                <Label htmlFor="1d">1D</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="3D" id="3d" />
-                <Label htmlFor="3d">3D</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="7D" id="7d" />
-                <Label htmlFor="7d">7D</Label>
-              </div>
-            </RadioGroup>
-          </Card>
-
           {/* Action Buttons */}
-          <div className="space-y-3">
+          <div className="space-y-2 xs:space-y-3">
             <Button
               onClick={findOverlap}
               disabled={!canSearch || isSearching}
-              className="w-full bg-gradient-to-r from-pink-400 via-purple-400 to-cyan-400 hover:from-pink-500 hover:via-purple-500 hover:to-cyan-500 text-white border-0 py-6"
+              className="w-full bg-gradient-to-r from-pink-400 via-purple-400 to-cyan-400 hover:from-pink-500 hover:via-purple-500 hover:to-cyan-500 text-white border-0 py-4 xs:py-6 text-sm xs:text-base"
               style={{ fontFamily: 'Fredoka, system-ui, sans-serif' }}
             >
               {isSearching ? (
                 <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  <span>Searching...</span>
+                  <div className="w-3 h-3 xs:w-4 xs:h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <span className="hidden xs:inline">Searching...</span>
+                  <span className="xs:hidden">Loading...</span>
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
-                  <Search className="w-4 h-4" />
-                  <span>Find Overlap</span>
+                  <Search className="w-3 h-3 xs:w-4 xs:h-4" />
+                  <span className="hidden xs:inline">Find Overlap</span>
+                  <span className="xs:hidden">Find Overlap</span>
                 </div>
               )}
             </Button>
@@ -303,21 +325,28 @@ export function WalletOverlapView() {
             <Button
               variant="secondary"
               onClick={clearAllWallets}
-              className="w-full bg-white/30 backdrop-blur-sm border-white/20 hover:bg-white/40"
+              className="w-full bg-white/30 backdrop-blur-sm border-white/20 hover:bg-white/40 text-xs xs:text-sm"
               style={{ fontFamily: 'Fredoka, system-ui, sans-serif' }}
             >
-              <RotateCcw className="w-4 h-4 mr-2" />
-              Clear All
+              <RotateCcw className="w-3 h-3 xs:w-4 xs:h-4 mr-1 xs:mr-2" />
+              <span className="hidden xs:inline">Clear All</span>
+              <span className="xs:hidden">Clear</span>
             </Button>
           </div>
 
           {!canSearch && (
-            <Card className="bg-orange-50/30 backdrop-blur-sm border-orange-200/20 p-4">
+            <Card className="bg-orange-50/30 backdrop-blur-sm border-orange-200/20 p-3 xs:p-4">
               <div className="flex items-center gap-2 text-orange-700">
-                <TrendingUp className="w-4 h-4" />
+                <TrendingUp className="w-3 h-3 xs:w-4 xs:h-4 flex-shrink-0" />
                 <div>
-                  <p className="text-sm font-medium">Need more wallets</p>
-                  <p className="text-xs text-orange-600">Add at least 3 valid wallet addresses</p>
+                  <p className="text-xs xs:text-sm">
+                    <span className="hidden xs:inline">Need more wallets</span>
+                    <span className="xs:hidden">Need 3+ wallets</span>
+                  </p>
+                  <p className="text-xs text-orange-600">
+                    <span className="hidden xs:inline">Add at least 3 valid wallet addresses</span>
+                    <span className="xs:hidden">Add 3+ valid addresses</span>
+                  </p>
                 </div>
               </div>
             </Card>
@@ -326,206 +355,152 @@ export function WalletOverlapView() {
 
         {/* Results Section */}
         <div className="lg:col-span-2">
-          <Card className="bg-white/30 backdrop-blur-sm border-white/20 p-6 min-h-[600px]">
-            {!showResults ? (
+          <Card className="bg-white/30 backdrop-blur-sm border-white/20 p-3 xs:p-4 sm:p-6 min-h-[500px] xs:min-h-[600px]">
+            {!showResults && !isSearching ? (
               <div className="flex flex-col items-center justify-center h-full text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-cyan-300 to-blue-300 rounded-full flex items-center justify-center mb-4">
-                  <Search className="w-8 h-8 text-white" />
+                <div className="w-12 h-12 xs:w-16 xs:h-16 bg-gradient-to-br from-cyan-300 to-blue-300 rounded-full flex items-center justify-center mb-3 xs:mb-4">
+                  <Search className="w-6 h-6 xs:w-8 xs:h-8 text-white" />
                 </div>
                 <h3 
-                  className="text-xl text-gray-800/90 mb-2"
+                  className="text-lg xs:text-xl text-gray-800/90 mb-2"
                   style={{ fontFamily: 'Fredoka, system-ui, sans-serif' }}
                 >
-                  Add 3 or more wallets to find common tokens
+                  <span className="hidden xs:inline">Add 3 or more wallets to find common tokens</span>
+                  <span className="xs:hidden">Add 3+ wallets to find tokens</span>
                 </h3>
-                <p className="text-gray-600 mb-4">
-                  Enter wallet addresses and we'll find tokens they all hold
+                <p className="text-xs xs:text-sm text-gray-600 mb-3 xs:mb-4">
+                  <span className="hidden xs:inline">Enter wallet addresses and we'll find tokens they all hold</span>
+                  <span className="xs:hidden">Enter addresses to find common tokens</span>
                 </p>
-                <div className="text-sm text-gray-500">
+                <div className="text-xs text-gray-500">
                   <p>💡 Press Esc to clear all inputs</p>
                   <p>💡 Minimum 3 wallets required</p>
                 </div>
               </div>
-            ) : (
+            ) : showResults ? (
               <div className="space-y-4">
                 {/* Results Header */}
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col xs:flex-row xs:justify-between xs:items-center mb-3 xs:mb-6 gap-2 xs:gap-4">
                   <h3 
-                    className="text-xl text-gray-800/90"
+                    className="text-base xs:text-lg sm:text-xl text-gray-800/90"
                     style={{ fontFamily: 'Fredoka, system-ui, sans-serif' }}
                   >
-                    Common Tokens ({mockResults.length} found)
+                    <span className="hidden xs:inline">Common Tokens ({sortedTokens.length} found)</span>
+                    <span className="xs:hidden">Tokens ({sortedTokens.length})</span>
                   </h3>
                   
                   <div className="flex items-center gap-2">
-                    <Label className="text-sm">Sort by:</Label>
+                    <Label className="text-xs xs:text-sm flex-shrink-0">Sort by:</Label>
                     <Select value={sortBy} onValueChange={setSortBy}>
-                      <SelectTrigger className="w-40 bg-white/30 border-white/20">
+                      <SelectTrigger className="w-32 xs:w-40 bg-white/30 border-white/20 text-xs xs:text-sm">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="overlapScore">Overlap Score</SelectItem>
-                        <SelectItem value="popularity">Popularity</SelectItem>
-                        <SelectItem value="winrate">Winrate</SelectItem>
+                        <SelectItem value="priceChange24h">
+                          <span className="hidden xs:inline">Price Change %</span>
+                          <span className="xs:hidden">Price Change</span>
+                        </SelectItem>
+                        <SelectItem value="volume24h">Volume</SelectItem>
+                        <SelectItem value="marketCap">
+                          <span className="hidden xs:inline">Market Cap</span>
+                          <span className="xs:hidden">Market Cap</span>
+                        </SelectItem>
+                        <SelectItem value="currentPrice">
+                          <span className="hidden xs:inline">Price</span>
+                          <span className="xs:hidden">Price</span>
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                 </div>
 
                 {/* Results Grid */}
-                <div className="space-y-3">
-                  {mockResults.map((token, index) => (
-                    <Card key={index} className="bg-white/20 backdrop-blur-sm border-white/10 p-4 hover:shadow-lg hover:shadow-pink-200/20 transition-all duration-200">
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-                            <div className="w-10 h-10 bg-gradient-to-br from-pink-300 to-purple-300 rounded-full flex items-center justify-center">
-                              <span className="text-white text-sm" style={{ fontFamily: 'Fredoka, system-ui, sans-serif' }}>
-                                {token.symbol.charAt(0)}
-                              </span>
+                <div className="space-y-3 xs:space-y-4">
+                  {sortedTokens.map((token, index) => (
+                    <Card key={token.mint} className="bg-white/20 backdrop-blur-sm border-white/10 p-3 xs:p-4 sm:p-6 hover:shadow-lg hover:shadow-pink-200/20 transition-all duration-200">
+                      <div className="flex justify-between items-start mb-3 xs:mb-4">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 xs:gap-3 mb-2">
+                            <Badge variant="outline" className="text-xs flex-shrink-0">
+                              #{index + 1}
+                            </Badge>
+                            <p className="text-xs text-gray-500 font-mono truncate">
+                              <span className="hidden xs:inline">{token.mint.slice(0, 8)}...{token.mint.slice(-6)}</span>
+                              <span className="xs:hidden">{token.mint.slice(0, 6)}...{token.mint.slice(-4)}</span>
+                            </p>
+                          </div>
+                          
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 xs:gap-3 sm:gap-4">
+                            <div className="text-center p-2 xs:p-3 bg-white/20 rounded-md xs:rounded-lg">
+                              <p className="text-xs text-gray-600">
+                                <span className="hidden xs:inline">Price Change</span>
+                                <span className="xs:hidden">Price Change</span>
+                              </p>
+                              <p className={`text-sm xs:text-base sm:text-lg leading-tight ${token.priceChange24h >= 0 ? 'text-green-600' : 'text-red-500'}`} style={{ fontFamily: 'Fredoka, system-ui, sans-serif' }}>
+                                {token.priceChange24h >= 0 ? '+' : ''}{token.priceChange24h.toFixed(1)}%
+                              </p>
                             </div>
                             
-                            <div>
-                              <h4 
-                                className="text-lg text-gray-800/90"
-                                style={{ fontFamily: 'Fredoka, system-ui, sans-serif' }}
-                              >
-                                {token.symbol}
-                              </h4>
-                              <p className="text-xs text-gray-600 font-mono">
-                                {token.tokenAddress.slice(0, 6)}...{token.tokenAddress.slice(-4)}
+                            <div className="text-center p-2 xs:p-3 bg-white/20 rounded-md xs:rounded-lg">
+                              <p className="text-xs text-gray-600">Price</p>
+                              <p className="text-sm xs:text-base sm:text-lg text-gray-800/90 leading-tight" style={{ fontFamily: 'Fredoka, system-ui, sans-serif' }}>
+                                ${formatPrice(token.currentPrice)}
+                              </p>
+                            </div>
+                            
+                            <div className="text-center p-2 xs:p-3 bg-white/20 rounded-md xs:rounded-lg">
+                              <p className="text-xs text-gray-600">Volume</p>
+                              <p className="text-sm xs:text-base sm:text-lg text-gray-800/90 leading-tight" style={{ fontFamily: 'Fredoka, system-ui, sans-serif' }}>
+                                ${formatNumber(token.volume24h)}
+                              </p>
+                            </div>
+                            
+                            <div className="text-center p-2 xs:p-3 bg-white/20 rounded-md xs:rounded-lg">
+                              <p className="text-xs text-gray-600">
+                                <span className="hidden xs:inline">Market Cap</span>
+                                <span className="xs:hidden">Market Cap</span>
+                              </p>
+                              <p className="text-sm xs:text-base sm:text-lg text-gray-800/90 leading-tight" style={{ fontFamily: 'Fredoka, system-ui, sans-serif' }}>
+                                ${formatNumber(token.marketCap)}
                               </p>
                             </div>
                           </div>
-                          
-                          <div className="grid grid-cols-3 gap-4 text-sm">
-                            <div>
-                              <p className="text-gray-600">Overlap Score</p>
-                              <Badge variant="secondary" className="bg-purple-100/50 text-purple-700 mt-1">
-                                {token.overlapScore}%
-                              </Badge>
-                            </div>
-                            <div>
-                              <p className="text-gray-600">Popularity</p>
-                              <p className="text-gray-800/90 mt-1">{token.popularity}%</p>
-                            </div>
-                            <div>
-                              <p className="text-gray-600">Winrate</p>
-                              <p className="text-green-600 mt-1">{token.winrate}%</p>
-                            </div>
-                          </div>
-
-                          <div className="mt-3">
-                            <p className="text-xs text-gray-600 mb-1">
-                              Common in {token.commonWallets.length} wallets
-                            </p>
-                            <div className="flex flex-wrap gap-1">
-                              {token.commonWallets.map((wallet, idx) => (
-                                <Badge key={idx} variant="outline" className="text-xs">
-                                  {wallet}
-                                </Badge>
-                              ))}
-                            </div>
-                          </div>
                         </div>
+                      </div>
 
-                        <div className="flex flex-col gap-2 ml-4">
-                          <Dialog>
-                            <DialogTrigger asChild>
-                              <Button
-                                variant="secondary"
-                                size="sm"
-                                className="bg-white/30 hover:bg-white/40"
-                                onClick={() => setSelectedToken(token)}
-                              >
-                                Details
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent className="bg-white/95 backdrop-blur-sm">
-                              <DialogHeader>
-                                <DialogTitle style={{ fontFamily: 'Fredoka, system-ui, sans-serif' }}>
-                                  {selectedToken?.symbol} Token Details
-                                </DialogTitle>
-                              </DialogHeader>
-                              <div className="space-y-4">
-                                <div>
-                                  <Label>Token Address</Label>
-                                  <div className="flex items-center gap-2 mt-1">
-                                    <Input
-                                      value={selectedToken?.tokenAddress || ''}
-                                      readOnly
-                                      className="font-mono text-sm"
-                                    />
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => copyToClipboard(selectedToken?.tokenAddress || '')}
-                                    >
-                                      Copy
-                                    </Button>
-                                  </div>
-                                </div>
-                                
-                                <div className="grid grid-cols-2 gap-4">
-                                  <div>
-                                    <Label>Overlap Score</Label>
-                                    <p className="text-2xl text-purple-600 mt-1">{selectedToken?.overlapScore}%</p>
-                                  </div>
-                                  <div>
-                                    <Label>Winrate</Label>
-                                    <p className="text-2xl text-green-600 mt-1">{selectedToken?.winrate}%</p>
-                                  </div>
-                                </div>
-
-                                <Button
-                                  onClick={() => openInAnalyzer(selectedToken?.tokenAddress || '')}
-                                  className="w-full bg-gradient-to-r from-pink-400 to-purple-400 text-white"
-                                >
-                                  Open in Analyzer
-                                </Button>
-                              </div>
-                            </DialogContent>
-                          </Dialog>
-
-                          <div className="flex flex-col gap-1">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => copyToClipboard(token.tokenAddress)}
-                              className="p-2"
-                            >
-                              <ExternalLink className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => toast("Opening Axiom", { description: "Redirecting to Axiom platform...", duration: 2000 })}
-                              className="text-xs px-2 py-1 text-purple-600 hover:text-purple-700"
-                            >
-                              Buy Axiom
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => toast("Opening GMGN", { description: "Redirecting to GMGN platform...", duration: 2000 })}
-                              className="text-xs px-2 py-1 text-green-600 hover:text-green-700"
-                            >
-                              Buy GMGN
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => toast("Opening Dex Screener", { description: "Viewing token on Dex Screener...", duration: 2000 })}
-                              className="text-xs px-2 py-1 text-blue-600 hover:text-blue-700"
-                            >
-                              Dex Screener
-                            </Button>
-                          </div>
-                        </div>
+                      {/* Action Button */}
+                      <div className="flex justify-start">
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => openInExplorer(token.mint)}
+                          className="bg-white/30 hover:bg-white/40 text-xs xs:text-sm px-2 xs:px-3 py-1 xs:py-2 min-h-[32px] xs:min-h-[36px]"
+                        >
+                          <ExternalLink className="w-3 h-3 xs:w-4 xs:h-4 mr-1 xs:mr-2" />
+                          <span className="hidden xs:inline">View in Explorer</span>
+                          <span className="xs:hidden">Explorer</span>
+                        </Button>
                       </div>
                     </Card>
                   ))}
                 </div>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full text-center">
+                <div className="w-12 h-12 xs:w-16 xs:h-16 bg-gradient-to-br from-blue-300 to-purple-300 rounded-full flex items-center justify-center mb-3 xs:mb-4">
+                  <div className="w-6 h-6 xs:w-8 xs:h-8 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
+                </div>
+                <h3 
+                  className="text-lg xs:text-xl text-gray-800/90 mb-2"
+                  style={{ fontFamily: 'Fredoka, system-ui, sans-serif' }}
+                >
+                  <span className="hidden xs:inline">Finding common tokens...</span>
+                  <span className="xs:hidden">Finding tokens...</span>
+                </h3>
+                <p className="text-xs xs:text-sm text-gray-600">
+                  <span className="hidden xs:inline">This may take a few moments as we analyze the wallets</span>
+                  <span className="xs:hidden">Analyzing wallets...</span>
+                </p>
               </div>
             )}
           </Card>

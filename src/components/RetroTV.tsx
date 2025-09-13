@@ -1,7 +1,7 @@
-import { useState, useRef } from "react";
-import { Play, Pause, Volume2, VolumeX } from "lucide-react";
-import { Button } from "./ui/button";
-import { Slider } from "./ui/slider";
+import { useState, useRef } from 'react';
+import { Play, Pause, Volume2, VolumeX } from 'lucide-react';
+import { Button } from './ui/button';
+import { Slider } from './ui/slider';
 
 export function RetroTV() {
   const [isPlaying, setIsPlaying] = useState(true); // 자동 재생을 위해 true로 설정
@@ -68,7 +68,7 @@ export function RetroTV() {
               {/* Screen Bezel */}
               <div className="relative bg-gradient-to-br from-gray-700 via-gray-800 to-gray-900 rounded-xl p-2">
                 {/* Video Screen - 와이드 화면으로 변경 */}
-                <div
+                <div 
                   className="relative w-96 h-56 bg-black rounded-lg overflow-hidden cursor-pointer"
                   onMouseEnter={() => setShowControls(true)}
                   onMouseLeave={() => setShowControls(false)}
@@ -87,21 +87,15 @@ export function RetroTV() {
                     preload="metadata"
                     poster="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjcyIiBoZWlnaHQ9IjUwNCIgdmlld0JveD0iMCAwIDY3MiA1MDQiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjY3MiIgaGVpZ2h0PSI1MDQiIGZpbGw9IiMwODA4MDgiLz48Y2lyY2xlIGN4PSIzMzYiIGN5PSIyNTIiIHI9IjYwIiBmaWxsPSIjNDA0MDQwIi8+PHBhdGggZD0iTTMwOCAyMjhsNzIgMjQtNzIgMjR2LTQ4eiIgZmlsbD0iIzllOWU5ZSIvPjwvc3ZnPg=="
                   >
-                    <source
-                      src="https://pub-384b1e5c1a1c4bda80d88ccf1e0ae085.r2.dev/pouchy.mp4"
-                      type="video/mp4"
-                    />
+                    <source src="https://www.dropbox.com/scl/fi/i7y2du9vq3sauadputqlh/202509051907-1.mp4?rlkey=wlvy1619e9hv38t1gfuz932wk&st=7gatpxhs&dl=1" type="video/mp4" />
                   </video>
 
                   {/* Modern Screen Effect */}
                   <div className="absolute inset-0 pointer-events-none rounded-lg">
                     {/* Subtle grain effect */}
-                    <div
-                      className="w-full h-full opacity-5"
-                      style={{
-                        background: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.3'%3E%3Ccircle cx='20' cy='20' r='0.5'/%3E%3Ccircle cx='60' cy='30' r='0.5'/%3E%3Ccircle cx='40' cy='60' r='0.5'/%3E%3Ccircle cx='80' cy='70' r='0.5'/%3E%3C/g%3E%3C/svg%3E")`,
-                      }}
-                    ></div>
+                    <div className="w-full h-full opacity-5" style={{
+                      background: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.3'%3E%3Ccircle cx='20' cy='20' r='0.5'/%3E%3Ccircle cx='60' cy='30' r='0.5'/%3E%3Ccircle cx='40' cy='60' r='0.5'/%3E%3Ccircle cx='80' cy='70' r='0.5'/%3E%3C/g%3E%3C/svg%3E")`,
+                    }}></div>
                     {/* Screen gloss */}
                     <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent rounded-lg"></div>
                   </div>
@@ -118,11 +112,7 @@ export function RetroTV() {
                         }}
                         className="bg-white/95 hover:bg-white text-gray-800 rounded-full w-16 h-16 shadow-lg"
                       >
-                        {isPlaying ? (
-                          <Pause className="w-7 h-7" />
-                        ) : (
-                          <Play className="w-7 h-7 ml-1" />
-                        )}
+                        {isPlaying ? <Pause className="w-7 h-7" /> : <Play className="w-7 h-7 ml-1" />}
                       </Button>
                     </div>
                   )}
@@ -140,18 +130,14 @@ export function RetroTV() {
                     <div className="w-2 h-2 bg-green-400 rounded-full shadow-lg shadow-green-400/50"></div>
                     <span className="text-gray-600 text-xs">ON</span>
                   </div>
-
+                  
                   {/* Brand logo area */}
-                  <div className="text-gray-400 text-xs tracking-wider">
-                    POUCHY VISION
-                  </div>
-
+                  <div className="text-gray-400 text-xs tracking-wider">POUCHY VISION</div>
+                  
                   {/* Volume level display */}
                   <div className="flex items-center gap-1">
                     <span className="text-gray-500 text-xs">VOL</span>
-                    <span className="text-gray-600 text-xs min-w-[2rem] text-center">
-                      {volume}%
-                    </span>
+                    <span className="text-gray-600 text-xs min-w-[2rem] text-center">{volume}%</span>
                   </div>
                 </div>
               </div>
@@ -165,11 +151,7 @@ export function RetroTV() {
                   onClick={handleMute}
                   className="h-8 w-8 p-0 text-gray-600 hover:text-gray-800 hover:bg-gray-100/50 rounded-full"
                 >
-                  {isMuted || volume === 0 ? (
-                    <VolumeX className="w-4 h-4" />
-                  ) : (
-                    <Volume2 className="w-4 h-4" />
-                  )}
+                  {isMuted || volume === 0 ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
                 </Button>
 
                 {/* Volume Slider */}
@@ -186,21 +168,9 @@ export function RetroTV() {
 
                 {/* Volume indicators */}
                 <div className="flex items-center gap-1">
-                  <div
-                    className={`w-1 h-1 rounded-full transition-colors ${
-                      volume > 0 ? "bg-gray-500" : "bg-gray-300"
-                    }`}
-                  ></div>
-                  <div
-                    className={`w-1 h-2 rounded-full transition-colors ${
-                      volume > 33 ? "bg-gray-500" : "bg-gray-300"
-                    }`}
-                  ></div>
-                  <div
-                    className={`w-1 h-3 rounded-full transition-colors ${
-                      volume > 66 ? "bg-gray-500" : "bg-gray-300"
-                    }`}
-                  ></div>
+                  <div className={`w-1 h-1 rounded-full transition-colors ${volume > 0 ? 'bg-gray-500' : 'bg-gray-300'}`}></div>
+                  <div className={`w-1 h-2 rounded-full transition-colors ${volume > 33 ? 'bg-gray-500' : 'bg-gray-300'}`}></div>
+                  <div className={`w-1 h-3 rounded-full transition-colors ${volume > 66 ? 'bg-gray-500' : 'bg-gray-300'}`}></div>
                 </div>
               </div>
             </div>
@@ -210,7 +180,7 @@ export function RetroTV() {
           <div className="relative">
             {/* Main stand base */}
             <div className="bg-gradient-to-b from-gray-100 to-gray-200 h-4 rounded-b-2xl shadow-inner border-t border-gray-200/50"></div>
-
+            
             {/* Stand extension */}
             <div className="absolute -bottom-3 left-1/2 transform -translate-x-1/2">
               <div className="w-48 h-6 bg-gradient-to-b from-gray-200 via-gray-100 to-gray-50 rounded-full shadow-lg border border-gray-200/30"></div>

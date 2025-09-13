@@ -1,8 +1,10 @@
+import React from 'react';
 import { Toaster } from './components/ui/sonner';
 import { RouterProvider, useRouter } from './components/Router';
 import { WalletProvider } from './components/WalletProvider';
 import { LandingPage } from './components/LandingPage';
-import { BlurredDAppPage } from './components/BlurredDAppPage';
+import { DAppPage } from './components/DAppPage';
+import { LaunchpadPage } from './components/LaunchpadPage';
 import { motion, AnimatePresence } from 'motion/react';
 
 function AppContent() {
@@ -25,6 +27,20 @@ function AppContent() {
           >
             <LandingPage />
           </motion.div>
+        ) : currentPage === 'launchpad' ? (
+          <motion.div
+            key="launchpad"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ 
+              duration: 0.8, 
+              ease: [0.22, 1, 0.36, 1]
+            }}
+            className="w-full min-h-screen"
+          >
+            <LaunchpadPage />
+          </motion.div>
         ) : (
           <motion.div
             key="dapp"
@@ -37,7 +53,7 @@ function AppContent() {
             }}
             className="w-full min-h-screen"
           >
-            <BlurredDAppPage />
+            <DAppPage />
           </motion.div>
         )}
       </AnimatePresence>
@@ -237,6 +253,11 @@ function AppContent() {
 }
 
 export default function App() {
+  // Set document title
+  React.useEffect(() => {
+    document.title = "Pouchy.fun - Cute Solana Launchpad & Analytics";
+  }, []);
+
   return (
     <RouterProvider>
       <WalletProvider>

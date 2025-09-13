@@ -5,35 +5,35 @@ import { useRouter } from './Router';
 import { useWallet } from './WalletProvider';
 import { DAppHeader } from './DAppHeader';
 import { WalletConnect } from './WalletConnect';
-import { TokenAnalyzerView } from './TokenAnalyzerView';
+import { WalletAnalyzerView } from './WalletAnalyzerView';
 import { WalletOverlapView } from './WalletOverlapView';
 import { CTOTrendingView } from './CTOTrendingView';
 
 const backgroundImage = 'https://images.unsplash.com/photo-1720624226898-240e707b089a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwYXN0ZWwlMjBob3QlMjBhaXIlMjBiYWxsb29ucyUyMGNsb3VkcyUyMHNreSUyMGRyZWFteXxlbnwxfHx8fDE3NTcxNDA3Mjd8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral';
 
-type DAppView = 'tokenAnalyzer' | 'walletOverlap' | 'ctoTrending';
+type DAppView = 'walletAnalyzer' | 'walletOverlap' | 'ctoTrending';
 
 export function DAppPage() {
-  const [currentView, setCurrentView] = useState<DAppView>('tokenAnalyzer');
+  const [currentView, setCurrentView] = useState<DAppView>('walletAnalyzer');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { navigateTo } = useRouter();
   const { isConnected } = useWallet();
 
   const renderView = () => {
     switch (currentView) {
-      case 'tokenAnalyzer':
-        return <TokenAnalyzerView />;
+      case 'walletAnalyzer':
+        return <WalletAnalyzerView />;
       case 'walletOverlap':
         return <WalletOverlapView />;
       case 'ctoTrending':
         return <CTOTrendingView />;
       default:
-        return <TokenAnalyzerView />;
+        return <WalletAnalyzerView />;
     }
   };
 
   const navigationItems = [
-    { key: 'tokenAnalyzer', icon: BarChart3, label: 'Token Analyzer' },
+    { key: 'walletAnalyzer', icon: BarChart3, label: 'Wallet Analyzer' },
     { key: 'walletOverlap', icon: Users, label: 'Wallet Overlap' },
     { key: 'ctoTrending', icon: TrendingUp, label: 'CTO Trending' },
   ];

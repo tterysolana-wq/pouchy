@@ -1,8 +1,8 @@
-import { ArrowLeft, LogOut, Wallet, Menu, X } from 'lucide-react';
+import { ArrowLeft, LogOut, Wallet, Menu, X, Rocket, RefreshCw } from 'lucide-react';
 import { Button } from './ui/button';
 import { useRouter } from './Router';
 import { useWallet } from './WalletProvider';
-import { ImageWithFallback } from './figma/ImageWithFallback';
+import { useState } from 'react';
 
 interface DAppHeaderProps {
   isMobileMenuOpen?: boolean;
@@ -11,7 +11,19 @@ interface DAppHeaderProps {
 
 export function DAppHeader({ isMobileMenuOpen, setIsMobileMenuOpen }: DAppHeaderProps = {}) {
   const { navigateTo } = useRouter();
-  const { walletAddress, walletType, balance, disconnectWallet } = useWallet();
+  const { walletAddress, walletType, balance, disconnectWallet, refreshBalance, isLoading } = useWallet();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefreshBalance = async () => {
+    setIsRefreshing(true);
+    try {
+      await refreshBalance();
+    } catch (error) {
+      console.error('Error refreshing balance:', error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   return (
     <header className="w-full px-2 py-2 xs:px-4 xs:py-3 sm:px-6 sm:py-4 flex items-center justify-between bg-white/20 backdrop-blur-sm border-b border-white/30">
@@ -76,30 +88,55 @@ export function DAppHeader({ isMobileMenuOpen, setIsMobileMenuOpen }: DAppHeader
 
       {/* Right side - Wallet info */}
       <div className="flex items-center gap-1 xs:gap-2 sm:gap-4 flex-shrink-0">
-        {/* Balance */}
-        <div className="bg-white/30 backdrop-blur-sm border border-white/20 rounded-lg xs:rounded-xl px-2 py-1 xs:px-3 xs:py-2">
+        {/* Balance and Address with refresh button */}
+        <div className="bg-white/30 backdrop-blur-sm border border-white/20 rounded-lg xs:rounded-xl px-2 py-1 xs:px-3 xs:py-2 flex items-center gap-1 xs:gap-2">
           <div className="flex items-center gap-1 xs:gap-2">
             <div className="w-1.5 h-1.5 xs:w-2 xs:h-2 bg-green-400 rounded-full animate-pulse flex-shrink-0"></div>
-            <span 
-              className="text-xs xs:text-sm text-gray-700/90"
-              style={{ fontFamily: 'Fredoka, system-ui, sans-serif' }}
-            >
-              <span className="hidden xs:inline">{balance.toFixed(3)} SOL</span>
-              <span className="xs:hidden">{balance.toFixed(0)} SOL</span>
-            </span>
+            <div className="flex flex-col xs:flex-row xs:items-center xs:gap-2">
+              <span 
+                className="text-xs xs:text-sm text-gray-700/90"
+                style={{ fontFamily: 'Fredoka, system-ui, sans-serif' }}
+              >
+                <span className="hidden xs:inline">{balance.toFixed(3)} SOL</span>
+                <span className="xs:hidden">{balance.toFixed(3)} SOL</span>
+              </span>
+              <span className="text-xs text-gray-600/80 font-mono">
+                <span className="hidden xs:inline">{walletAddress?.slice(0, 4)}...{walletAddress?.slice(-4)}</span>
+                <span className="xs:hidden">{walletAddress?.slice(0, 3)}...{walletAddress?.slice(-3)}</span>
+              </span>
+            </div>
           </div>
+          
+          {/* Refresh button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleRefreshBalance}
+            disabled={isRefreshing || isLoading}
+            className="p-0.5 xs:p-1 h-auto min-h-0 hover:bg-white/20"
+          >
+            <RefreshCw className={`w-2.5 h-2.5 xs:w-3 xs:h-3 ${isRefreshing ? 'animate-spin' : ''}`} />
+          </Button>
         </div>
 
-        {/* Wallet Address - Hidden on very small screens */}
-        <div className="hidden xs:block bg-white/30 backdrop-blur-sm border border-white/20 rounded-lg xs:rounded-xl px-2 py-1 xs:px-3 xs:py-2">
+        {/* Launchpad Button */}
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={() => navigateTo('launchpad')}
+          className="bg-gradient-to-r from-pink-500/20 via-purple-500/20 to-blue-500/20 backdrop-blur-sm border-white/20 hover:bg-gradient-to-r hover:from-pink-500/30 hover:via-purple-500/30 hover:to-blue-500/30 hover:shadow-lg hover:shadow-pink-200/20 transition-all duration-200 text-xs px-2 py-1 xs:px-3 xs:py-2 min-h-[32px] xs:min-h-[36px] text-purple-700 font-medium"
+        >
+          <Rocket className="w-3 h-3 xs:w-4 xs:h-4 mr-1" />
+          <span className="hidden sm:inline">Launchpad</span>
+          <span className="sm:hidden">🚀</span>
+        </Button>
+
+        {/* Wallet Type - Hidden on small screens */}
+        <div className="hidden sm:block bg-white/30 backdrop-blur-sm border border-white/20 rounded-lg xs:rounded-xl px-2 py-1 xs:px-3 xs:py-2">
           <div className="flex items-center gap-1 xs:gap-2">
             <div className="w-1.5 h-1.5 xs:w-2 xs:h-2 bg-blue-400 rounded-full flex-shrink-0"></div>
-            <span className="text-xs xs:text-sm text-gray-700/90 font-mono">
-              <span className="hidden sm:inline">{walletAddress?.slice(0, 6)}...{walletAddress?.slice(-4)}</span>
-              <span className="sm:hidden">{walletAddress?.slice(0, 4)}...{walletAddress?.slice(-3)}</span>
-            </span>
             <span 
-              className="text-xs text-gray-500 capitalize hidden sm:inline"
+              className="text-xs text-gray-500 capitalize"
               style={{ fontFamily: 'Fredoka, system-ui, sans-serif' }}
             >
               {walletType}

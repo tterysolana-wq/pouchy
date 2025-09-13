@@ -1,11 +1,40 @@
-import { Wallet, Sparkles } from 'lucide-react';
+import { Wallet, Sparkles, Download, AlertCircle } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
 import { useWallet } from './WalletProvider';
-import { ImageWithFallback } from './figma/ImageWithFallback';
+import { useState, useEffect } from 'react';
 
 export function WalletConnect() {
-  const { connectWallet } = useWallet();
+  const { connectWallet, isLoading } = useWallet();
+  const [availableWallets, setAvailableWallets] = useState({
+    phantom: false,
+    solflare: false
+  });
+
+  // Check which wallets are installed
+  useEffect(() => {
+    const checkWallets = () => {
+      setAvailableWallets({
+        phantom: !!(window.solana && window.solana.isPhantom),
+        solflare: !!(window.solflare && window.solflare.isSolflare)
+      });
+    };
+
+    checkWallets();
+    
+    // Check again after a short delay in case wallets load asynchronously
+    const timer = setTimeout(checkWallets, 1000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const openWalletDownload = (walletType: 'phantom' | 'solflare') => {
+    const urls = {
+      phantom: 'https://phantom.app/',
+      solflare: 'https://solflare.com/'
+    };
+    
+    window.open(urls[walletType], '_blank');
+  };
 
   return (
     <div className="min-h-screen mobile-viewport flex items-center justify-center px-4 sm:px-6 safe-area-inset-top safe-area-inset-bottom">
@@ -37,38 +66,105 @@ export function WalletConnect() {
 
           {/* Wallet Options */}
           <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
-            <Button
-              onClick={() => connectWallet('phantom')}
-              className="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200 py-4 sm:py-6 min-h-[44px] touch-manipulation"
-              style={{ fontFamily: 'Fredoka, system-ui, sans-serif' }}
-            >
-              <div className="flex items-center justify-center gap-2 xs:gap-3">
-                <div className="w-4 h-4 xs:w-5 xs:h-5 sm:w-6 sm:h-6 bg-white/20 rounded-md xs:rounded-lg flex items-center justify-center">
-                  <Sparkles className="w-2.5 h-2.5 xs:w-3 xs:h-3 sm:w-4 sm:h-4" />
+            {/* Phantom Wallet */}
+            {availableWallets.phantom ? (
+              <Button
+                onClick={() => connectWallet('phantom')}
+                disabled={isLoading}
+                className="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200 py-4 sm:py-6 min-h-[44px] touch-manipulation disabled:opacity-50"
+                style={{ fontFamily: 'Fredoka, system-ui, sans-serif' }}
+              >
+                <div className="flex items-center justify-center gap-2 xs:gap-3">
+                  {isLoading ? (
+                    <div className="w-4 h-4 xs:w-5 xs:h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <div className="w-4 h-4 xs:w-5 xs:h-5 sm:w-6 sm:h-6 bg-white/20 rounded-md xs:rounded-lg flex items-center justify-center">
+                      <Sparkles className="w-2.5 h-2.5 xs:w-3 xs:h-3 sm:w-4 sm:h-4" />
+                    </div>
+                  )}
+                  <span className="text-sm xs:text-base sm:text-lg">
+                    <span className="hidden xs:inline">
+                      {isLoading ? 'Connecting...' : 'Connect with Phantom'}
+                    </span>
+                    <span className="xs:hidden">
+                      {isLoading ? 'Connecting...' : 'Phantom'}
+                    </span>
+                  </span>
                 </div>
-                <span className="text-sm xs:text-base sm:text-lg">
-                  <span className="hidden xs:inline">Connect with Phantom</span>
-                  <span className="xs:hidden">Phantom</span>
-                </span>
-              </div>
-            </Button>
+              </Button>
+            ) : (
+              <Button
+                onClick={() => openWalletDownload('phantom')}
+                variant="outline"
+                className="w-full border-purple-300 text-purple-600 hover:bg-purple-50 py-4 sm:py-6 min-h-[44px] touch-manipulation"
+                style={{ fontFamily: 'Fredoka, system-ui, sans-serif' }}
+              >
+                <div className="flex items-center justify-center gap-2 xs:gap-3">
+                  <Download className="w-4 h-4 xs:w-5 xs:h-5" />
+                  <span className="text-sm xs:text-base">
+                    <span className="hidden xs:inline">Install Phantom</span>
+                    <span className="xs:hidden">Get Phantom</span>
+                  </span>
+                </div>
+              </Button>
+            )}
 
-            <Button
-              onClick={() => connectWallet('solflare')}
-              className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200 py-4 sm:py-6 min-h-[44px] touch-manipulation"
-              style={{ fontFamily: 'Fredoka, system-ui, sans-serif' }}
-            >
-              <div className="flex items-center justify-center gap-2 xs:gap-3">
-                <div className="w-4 h-4 xs:w-5 xs:h-5 sm:w-6 sm:h-6 bg-white/20 rounded-md xs:rounded-lg flex items-center justify-center">
-                  <Sparkles className="w-2.5 h-2.5 xs:w-3 xs:h-3 sm:w-4 sm:h-4" />
+            {/* Solflare Wallet */}
+            {availableWallets.solflare ? (
+              <Button
+                onClick={() => connectWallet('solflare')}
+                disabled={isLoading}
+                className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200 py-4 sm:py-6 min-h-[44px] touch-manipulation disabled:opacity-50"
+                style={{ fontFamily: 'Fredoka, system-ui, sans-serif' }}
+              >
+                <div className="flex items-center justify-center gap-2 xs:gap-3">
+                  {isLoading ? (
+                    <div className="w-4 h-4 xs:w-5 xs:h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <div className="w-4 h-4 xs:w-5 xs:h-5 sm:w-6 sm:h-6 bg-white/20 rounded-md xs:rounded-lg flex items-center justify-center">
+                      <Sparkles className="w-2.5 h-2.5 xs:w-3 xs:h-3 sm:w-4 sm:h-4" />
+                    </div>
+                  )}
+                  <span className="text-sm xs:text-base sm:text-lg">
+                    <span className="hidden xs:inline">
+                      {isLoading ? 'Connecting...' : 'Connect with Solflare'}
+                    </span>
+                    <span className="xs:hidden">
+                      {isLoading ? 'Connecting...' : 'Solflare'}
+                    </span>
+                  </span>
                 </div>
-                <span className="text-sm xs:text-base sm:text-lg">
-                  <span className="hidden xs:inline">Connect with Solflare</span>
-                  <span className="xs:hidden">Solflare</span>
-                </span>
-              </div>
-            </Button>
+              </Button>
+            ) : (
+              <Button
+                onClick={() => openWalletDownload('solflare')}
+                variant="outline"
+                className="w-full border-orange-300 text-orange-600 hover:bg-orange-50 py-4 sm:py-6 min-h-[44px] touch-manipulation"
+                style={{ fontFamily: 'Fredoka, system-ui, sans-serif' }}
+              >
+                <div className="flex items-center justify-center gap-2 xs:gap-3">
+                  <Download className="w-4 h-4 xs:w-5 xs:h-5" />
+                  <span className="text-sm xs:text-base">
+                    <span className="hidden xs:inline">Install Solflare</span>
+                    <span className="xs:hidden">Get Solflare</span>
+                  </span>
+                </div>
+              </Button>
+            )}
           </div>
+
+          {/* No Wallets Warning */}
+          {!availableWallets.phantom && !availableWallets.solflare && (
+            <div className="mb-4 p-3 bg-yellow-100/50 border border-yellow-200/50 rounded-lg">
+              <div className="flex items-center gap-2 text-yellow-700">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                <div className="text-left">
+                  <p className="text-xs font-medium">No Solana wallets detected</p>
+                  <p className="text-xs opacity-80">Install a wallet to connect</p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Footer */}
           <div className="text-xs sm:text-sm text-gray-500 space-y-1">

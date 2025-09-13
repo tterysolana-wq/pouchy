@@ -1,0 +1,37 @@
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle with gradient -->
+  <circle cx="8" cy="8" r="8" fill="url(#background)" />
+  
+  <!-- Simplified Solana-inspired shape for small size -->
+  <path d="M4 6c0-0.8 0.8-1.2 1.5-1l5 1c0.8 0.2 1.5 0.8 1.5 1.5v1c0 0.8-0.8 1.2-1.5 1l-5-1c-0.8-0.2-1.5-0.8-1.5-1.5v-1z" 
+        fill="url(#primary)" />
+  
+  <!-- Second layer -->
+  <path d="M4 9c0-0.8 0.8-1.2 1.5-1l5 1c0.8 0.2 1.5 0.8 1.5 1.5v1c0 0.8-0.8 1.2-1.5 1l-5-1c-0.8-0.2-1.5-0.8-1.5-1.5v-1z" 
+        fill="url(#secondary)" opacity="0.8" />
+  
+  <!-- Small sparkles -->
+  <circle cx="6" cy="4.5" r="0.5" fill="#FFF5D6" opacity="0.9" />
+  <circle cx="11.5" cy="5.5" r="0.5" fill="#D7F9F1" opacity="0.8" />
+  
+  <!-- Central highlight -->
+  <ellipse cx="8" cy="8" rx="2" ry="1" fill="rgba(255, 255, 255, 0.3)" />
+  
+  <defs>
+    <linearGradient id="background" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#B4E1FF" />
+      <stop offset="50%" stop-color="#FFB3C1" />
+      <stop offset="100%" stop-color="#D7F9F1" />
+    </linearGradient>
+    
+    <linearGradient id="primary" x1="0%" y1="0%" x2="100%" y2="50%">
+      <stop offset="0%" stop-color="#FFF5D6" />
+      <stop offset="100%" stop-color="#FBE7C6" />
+    </linearGradient>
+    
+    <linearGradient id="secondary" x1="0%" y1="50%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#D7F9F1" />
+      <stop offset="100%" stop-color="#B4E1FF" />
+    </linearGradient>
+  </defs>
+</svg>
