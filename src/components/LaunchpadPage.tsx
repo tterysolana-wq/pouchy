@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Card } from './ui/card';
 import { Badge } from './ui/badge';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
 import { useRouter } from './Router';
 import { useWallet } from './WalletProvider';
 import { WalletConnect } from './WalletConnect';
@@ -27,7 +28,9 @@ import {
   Target,
   Activity,
   Zap,
-  Heart
+  Heart,
+  Construction,
+  Calendar
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
@@ -100,8 +103,14 @@ export function LaunchpadPage() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('pouchy buzz');
+  const [showComingSoon, setShowComingSoon] = useState(false);
   const { navigateTo } = useRouter();
   const { isConnected } = useWallet();
+
+  // Show coming soon modal when component mounts
+  useEffect(() => {
+    setShowComingSoon(true);
+  }, []);
 
   const navigationItems = [
     { key: 'home', icon: Home, label: 'Home' },
@@ -155,6 +164,91 @@ export function LaunchpadPage() {
     >
       {/* Background Overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-50/20 via-pink-50/15 to-purple-50/20"></div>
+      
+      {/* Coming Soon Dialog */}
+      <Dialog open={showComingSoon} onOpenChange={setShowComingSoon}>
+        <DialogContent className="sm:max-w-md bg-white/95 backdrop-blur-xl border border-white/40 shadow-2xl">
+          <DialogHeader className="text-center space-y-4">
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", duration: 0.6 }}
+              className="mx-auto w-20 h-20 bg-gradient-to-br from-pink-400 via-purple-400 to-blue-400 rounded-full flex items-center justify-center shadow-lg"
+            >
+              <Construction className="w-10 h-10 text-white" />
+            </motion.div>
+            
+            <DialogTitle 
+              className="text-2xl font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent"
+              style={{ fontFamily: 'Fredoka, system-ui, sans-serif' }}
+            >
+              Coming Soon! 🚀
+            </DialogTitle>
+            
+            <DialogDescription 
+              className="text-base text-gray-600 leading-relaxed"
+              style={{ fontFamily: 'Fredoka, system-ui, sans-serif' }}
+            >
+              The Pouchy.fun Launchpad is currently under development. 
+              We're building something amazing for you! 
+              <br />
+              <br />
+              In the meantime, explore our powerful analytics tools.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex flex-col gap-3 mt-6">
+            <Button
+              onClick={() => {
+                setShowComingSoon(false);
+                navigateTo('dapp');
+              }}
+              className="bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 hover:from-pink-600 hover:via-purple-600 hover:to-blue-600 text-white shadow-lg hover:shadow-xl transition-all duration-300"
+              style={{ fontFamily: 'Fredoka, system-ui, sans-serif' }}
+            >
+              <Target className="w-4 h-4 mr-2" />
+              Go to Analytics
+            </Button>
+            
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowComingSoon(false);
+                navigateTo('landing');
+              }}
+              className="border-gray-200 text-gray-600 hover:bg-gray-50"
+              style={{ fontFamily: 'Fredoka, system-ui, sans-serif' }}
+            >
+              <Home className="w-4 h-4 mr-2" />
+              Back to Home
+            </Button>
+            
+            <Button
+              variant="ghost"
+              onClick={() => setShowComingSoon(false)}
+              className="text-gray-500 hover:bg-gray-50"
+              style={{ fontFamily: 'Fredoka, system-ui, sans-serif' }}
+            >
+              Stay on Launchpad Preview
+            </Button>
+          </div>
+
+          <div className="mt-6 p-4 bg-gradient-to-r from-pink-50 via-purple-50 to-blue-50 rounded-xl border border-pink-200/30">
+            <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
+              <Calendar className="w-4 h-4" />
+              <span style={{ fontFamily: 'Fredoka, system-ui, sans-serif' }}>
+                Expected Launch: Q2 2025
+              </span>
+            </div>
+            <p 
+              className="text-xs text-gray-500"
+              style={{ fontFamily: 'Fredoka, system-ui, sans-serif' }}
+            >
+              Follow us for updates and early access announcements!
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
       
       <div className="relative z-10 min-h-screen">
         {/* Header */}
